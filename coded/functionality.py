@@ -4,25 +4,8 @@ from telebot import types
 from coded.recipe import Recipe
 from coded.ingredient import Ingredient 
 import random
-
-@bot.message_handler(content_types=['text'])
-def main_handler(message):
-    match message.text:
-        case Buttons.start_russian_:
-            start_command(message)
-        case Buttons.help_russian_:
-            help_command(message)
-        case Buttons.add_recipe_russian_:
-            add_recipe(message)
-        case Buttons.recipes_russian_:
-            look_at_recipes(message)
-        case Buttons.recipe_concrete_russian_:
-            concrete_look(message)
-        case Buttons.clear_russian_:
-            clear_database(message)
-        case _:
-            bot.send_message(message.chat.id, "Не знаю такой команды")
-        
+            
+@bot.message_handler(commands=["start"])
 def start_command(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard = True, row_width = 2)
     
@@ -34,10 +17,12 @@ def start_command(message):
     markup.add(help_button, add_recipe_button, recipes_button, recipe_concrete_button)
     
     bot.send_message(message.chat.id, 'Данный бот предназначен для хранения и просмотра рецептов, что вы хотите сделать?', reply_markup=markup)
-    
+
+@bot.message_handler(commands=["help"])    
 def help_command(message):
     bot.send_message(message.chat.id, Messages.help_message_)
 
+@bot.message_handler(commands=["add_recipe"])
 def add_recipe(message):
     new_recipe = Recipe()
     
@@ -170,7 +155,8 @@ def enough_instruction(call):
     bot.send_message(call.message.chat.id, "Ваш рецепт записан")
     lst = temporary_list[index].to_list()
     data_base.add({ "recipe_listed" : lst })
-    
+
+@bot.message_handler(commands=["recipes"])
 def look_at_recipes(message):
     to_message = ""
     for recipe in data_base.getAll():
@@ -180,6 +166,7 @@ def look_at_recipes(message):
         return
     bot.send_message(message.chat.id, to_message)
 
+@bot.message_handler(commands=["recipe"])
 def concrete_look(message):
     bot.send_message(message.chat.id, "Введите id рецепта")
     bot.register_next_step_handler(message, get_id_recipe)
@@ -195,6 +182,7 @@ def get_id_recipe(message):
         return
     bot.send_message(message.chat.id, got[0]["recipe_listed"][1])
         
+@bot.message_handler(commands=["clear_storage"])
 def clear_database(message):
     markup = types.InlineKeyboardMarkup(row_width = 2)
     
@@ -208,3 +196,22 @@ def clear_all(call):
     bot.delete_message(call.message.chat.id, call.message.message_id)
     bot.send_message(call.message.id, "Всё очищено")
     data_base.deleteAll()
+
+@bot.message_handler(content_types=['text'])
+def main_handler(message):
+    match message.text:
+        case Buttons.start_russian_:
+            start_command(message)
+        case Buttons.help_russian_:
+            help_command(message)
+        case Buttons.add_recipe_russian_:
+            add_recipe(message)
+        case Buttons.recipes_russian_:
+            look_at_recipes(message)
+        case Buttons.recipe_concrete_russian_:
+            concrete_look(message)
+        case Buttons.clear_russian_:
+            clear_database(message)
+        case _:
+            print(message.text)
+            bot.send_message(message.chat.id, "Не знаю такой команды")
