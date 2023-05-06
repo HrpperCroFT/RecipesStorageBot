@@ -157,7 +157,7 @@ def add_instruction(call):
     bot.delete_message(call.message.chat.id, call.message.message_id)
     index = int(call.data.split('|')[1])
     bot.send_message(call.message.chat.id, "Введите инструкцию")
-    bot.register_next_step_handler(call.message, get_instruction, index)
+    get_instruction(call.message, index)
 
 def get_instruction(message, index):
     temporary_list[index].add_instruction(message.text)
