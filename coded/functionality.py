@@ -98,9 +98,9 @@ def add_ingredient_measure(call):
     parsed = call.data.split('|')
     
     match parsed[1]:
-        case "volume":
-            bot.send_message(call.message.chat.id, "Введите количество в формате: число-единица измерения, последнее либо мг, либо г, либо кг.")
         case "weight":
+            bot.send_message(call.message.chat.id, "Введите количество в формате: число-единица измерения, последнее либо мг, либо г, либо кг.")
+        case "volume":
             bot.send_message(call.message.chat.id, "Введите количество в формате: число-единица измерения, последнее либо мл, либо л")
         case "other":
             bot.send_message(call.message.chat.id, "Введите количество (не используйте знак |)")
@@ -114,7 +114,7 @@ def last_step_ingredient(message, parsed):
         return
     index = int(parsed[-1])
     match parsed[1]:
-        case "volume":
+        case "weight":
              parsed_amount = message.text.split("-")
              if len(parsed_amount) != 2 or not parsed_amount[0].isdigit() or not parsed_amount[1] in ['мг', 'г', 'кг']:
                  bot.send_message(message.chat.id, "Неверный формат, попробуйте ещё раз")
@@ -122,12 +122,12 @@ def last_step_ingredient(message, parsed):
                  return
              match parsed_amount[1]:
                  case 'мг':
-                     temporary_list[index].add_ingredient(Ingredient(parsed[-2], parsed_amount[0], "volume", "milligramm"))
+                     temporary_list[index].add_ingredient(Ingredient(parsed[-2], parsed_amount[0], "weight", "milligramm"))
                  case 'г':
-                     temporary_list[index].add_ingredient(Ingredient(parsed[-2], parsed_amount[0], "volume", "gramm"))
+                     temporary_list[index].add_ingredient(Ingredient(parsed[-2], parsed_amount[0], "weight", "gramm"))
                  case 'кг':
-                     temporary_list[index].add_ingredient(Ingredient(parsed[-2], parsed_amount[0], "volume", "kilogramm"))
-        case "weight":
+                     temporary_list[index].add_ingredient(Ingredient(parsed[-2], parsed_amount[0], "weight", "kilogramm"))
+        case "volume":
             parsed_amount = message.text.split("-")
             if len(parsed_amount) != 2 or not parsed_amount[0].isdigit() or not parsed_amount[1] in ['мл', 'л']:
                 bot.send_message(message.chat.id, "Неверный формат, попробуйте ещё раз")
@@ -169,15 +169,14 @@ def enough_instruction(call):
     index = int(call.data.split('|')[1])
     bot.send_message(call.message.chat.id, "Ваш рецепт записан")
     lst = temporary_list[index].to_list()
-    print(lst)
     data_base.add({ "recipe_listed" : lst })
     
 def look_at_recipes(message):
     to_message = ""
     for recipe in data_base.getAll():
-        to_message += (recipe[recipe_listed][0] + ": id " + str(recipe["id"])) + "\n"
+        to_message += (recipe["recipe_listed"][0] + ": id " + str(recipe["id"])) + "\n"
     if to_message == "":
-        bot.send_message(message.chat.id, "У ва сещё нет рецептов")
+        bot.send_message(message.chat.id, "У вас ещё нет рецептов")
         return
     bot.send_message(message.chat.id, to_message)
 
@@ -190,12 +189,11 @@ def get_id_recipe(message):
         bot.send_message(message.chat.id, "Неправильный формат id, попробуйте ещё раз")
         bot.register_next_step_handler(message, get_id_recipe)
         return
-    got = data_base.getByQuerry(querry = {"id" : int(message.text)})
+    got = data_base.getByQuery(query = {"id" : int(message.text)})
     if len(got) == 0:
         bot.send_message(message.chat.id, "Рецепта с таким id не существует")
         return
-    bot.send_message(message.chat.id, Recipe(fromlist = True, lst = got[0]["recipe_listed"]).to_str())
-        
+    bot.send_message(message.chat.id, got[0]["recipe_listed"][1])
         
 def clear_database(message):
     markup = types.InlineKeyboardMarkup(row_width = 2)

@@ -10,6 +10,8 @@ temporary_list = []
 bot = telebot.TeleBot(apikey)
 
 class Buttons:
+    """ Class with names of buttons """
+    
     start_russian_ = "Начать"
     help_russian_ = "Помощь"
     add_recipe_russian_ = "Добавить рецепт"
@@ -31,6 +33,8 @@ class Buttons:
     no_ = "Нет"
 
 class Messages:
+    """ Class of constant messages """
+    
     help_message_ = """ Основные команды:
     Начать — /start
     Помощь — /help
@@ -41,12 +45,17 @@ class Messages:
     """
     
 class VolumeMeasure(Enum):
+    """ Enumerates volume measure units """
+    
     milliliters = 0
     litres = 1
 
 class Volume:
+    """ Type of measure with volume """
+    
     measure = VolumeMeasure.milliliters
     amount = 0
+    
     def __init__(self, measure_, amount_):
         self.amount = amount_
         if measure_ == "milliliters":
@@ -55,6 +64,8 @@ class Volume:
             self.measure = VolumeMeasure.litres
     
     def to_str(self):
+        """ Method of conversion to string """
+        
         result = str(self.amount)
         if self.measure == VolumeMeasure.milliliters:
             result += " мл"
@@ -63,13 +74,18 @@ class Volume:
         return result
 
 class WeightMeasure(Enum):
+    """ Enumerates weight measure units """
+    
     milligramm = 0
     gramm = 1
     kilogramm = 2
 
 class Weight:
+    """ Type of measure with weight """
+    
     measure = WeightMeasure.milligramm
     amount = 0
+    
     def __init__(self, measure_, amount_):
         self.amount = amount_
         if measure_ == "milligramm":
@@ -80,6 +96,8 @@ class Weight:
             self.measure = WeightMeasure.kilogramm
     
     def to_str(self):
+        """ Method of conversion to string """
+        
         result = str(self.amount)
         if self.measure == VolumeMeasure.milligramm:
             result += " мг"
@@ -90,6 +108,8 @@ class Weight:
         return result
 
 class OtherMeasurement:
+    """ Type of measure with other ways """
+    
     amount = ""
     def __init__(self, amount):
         self.amount = amount

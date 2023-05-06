@@ -6,12 +6,7 @@ class Recipe:
     ingredients = []
     def __init__(self, fromlist = False, lst = []):
         self.ingredients = []
-        if fromlist:
-            self.name = lst[0]
-            self.instructions = lst[2]
-            for ingr in lst[1]:
-                self.ingredients.append(Ingredient(fromlist = True, lst = ingr))
-            return
+        self.name = ""
         self.instructions = []
     
     def add_ingredient(self, ingredient_):
@@ -22,11 +17,7 @@ class Recipe:
         
     def to_list(self):
         result = [self.name]
-        result_ingredients = []
-        for ingr in self.ingredients:
-            result_ingredients.append(ingr.to_list())
-        result.append(result_ingredients)
-        result.append(self.instructions)
+        result.append(self.to_str())
         return result
     
     def to_str(self):
@@ -36,5 +27,5 @@ class Recipe:
             result += "* " + ingr.to_str() + "\n"
         result += "Приготовление: \n"
         for i in range(len(self.instructions)):
-            result += str(i) + ". " + instructions.to_str + "\n"
+            result += str(i + 1) + ". " + self.instructions[i] + "\n"
         return result
