@@ -7,6 +7,8 @@ import random
             
 @bot.message_handler(commands=["start"])
 def start_command(message):
+    """ Shows start menu """
+    
     markup = types.ReplyKeyboardMarkup(resize_keyboard = True, row_width = 2)
     
     help_button = types.KeyboardButton(Buttons.help_russian_)
@@ -20,10 +22,14 @@ def start_command(message):
 
 @bot.message_handler(commands=["help"])    
 def help_command(message):
+    """ Shows help message """
+    
     bot.send_message(message.chat.id, Messages.help_message_)
 
 @bot.message_handler(commands=["add_recipe"])
 def add_recipe(message):
+    """ Starts adding new recipe """
+    
     new_recipe = Recipe()
     
     temporary_list.append(new_recipe)
@@ -33,10 +39,14 @@ def add_recipe(message):
     bot.register_next_step_handler(message, get_name, len(temporary_list) - 1)
     
 def get_name(message, index):
+    """ Gets name of new recipe """
+    
     temporary_list[index].name = message.text
     menu_recipe_ingredients(message, index)
     
 def menu_recipe_ingredients(message, index):
+    """ Shows menu of adding new ingredients to this recipe """
+    
     markup = types.InlineKeyboardMarkup(row_width = 2)
     
     add_ingredient_button = types.InlineKeyboardButton(Buttons.add_ingredient_, callback_data="add_ingredient|" + str(index))
@@ -48,6 +58,8 @@ def menu_recipe_ingredients(message, index):
 
 @bot.callback_query_handler(func = lambda call: call.data.startswith("add_ingredient"))
 def add_ingredient(call):
+    """ Starts ading new ingredient to recipe """
+    
     bot.delete_message(call.message.chat.id, call.message.message_id)
     index = int(call.data.split('|')[1])
     bot.send_message(call.message.chat.id, "Введите название ингредиента (не используйте символ |)")
@@ -55,15 +67,20 @@ def add_ingredient(call):
 
 @bot.callback_query_handler(func = lambda call: call.data.startswith("enough_ingredients"))    
 def enough_ingredients(call):
+    """ Ends adding ingredients to recipe """
+    
     bot.delete_message(call.message.chat.id, call.message.message_id)
     index = int(call.data.split("|")[1])
     menu_recipe_instructions(call.message, index)
     
 def add_ingredient_name(message, index):
+    """ Gets name of new ingredient and shows menu of getting way of measuring """
+    
     if '|' in message.text:
         bot.send_message(message.chat.id, "Нельзя использовать символ |, попробуйте ещё раз")
         bot.register_next_step_handler(message, add_ingredient_name, index)
         return
+    
     stored = message.text + "|" + str(index)
     
     markup = types.InlineKeyboardMarkup(row_width = 3)
@@ -78,6 +95,8 @@ def add_ingredient_name(message, index):
 
 @bot.callback_query_handler(func = lambda call: call.data.startswith("measure"))
 def add_ingredient_measure(call):
+    """ Adds measurement of new ingredient """
+    
     bot.delete_message(call.message.chat.id, call.message.message_id)
     
     parsed = call.data.split('|')
@@ -93,10 +112,13 @@ def add_ingredient_measure(call):
     bot.register_next_step_handler(call.message, last_step_ingredient, parsed)
     
 def last_step_ingredient(message, parsed):
+    """ Finally adds new ingredient """
+    
     if "|" in message.text:
         bot.send_message(message.chat.id, "Неверный формат, попробуйте ещё раз")
         bot.register_next_step_handler(message, last_step_ingredient, parsed)
         return
+    
     index = int(parsed[-1])
     match parsed[1]:
         case "weight":
@@ -128,6 +150,8 @@ def last_step_ingredient(message, parsed):
     menu_recipe_ingredients(message, index)
 
 def menu_recipe_instructions(message, index):
+    """ Shows menu of adding instructions to this recipe """
+    
     markup = types.InlineKeyboardMarkup(row_width = 2)
     
     add_instruction_button = types.InlineKeyboardButton(Buttons.add_instruction_, callback_data = "add_instruction|" + str(index))
@@ -139,17 +163,23 @@ def menu_recipe_instructions(message, index):
     
 @bot.callback_query_handler(func = lambda call: call.data.startswith("add_instruction"))
 def add_instruction(call):
+    """ Starts adding current instruction to recipe """
+    
     bot.delete_message(call.message.chat.id, call.message.message_id)
     index = int(call.data.split('|')[1])
     bot.send_message(call.message.chat.id, "Введите инструкцию")
     get_instruction(call.message, index)
 
 def get_instruction(message, index):
+    """ Gets full instruction text and adds it to recipe """
+    
     temporary_list[index].add_instruction(message.text)
     bot.register_next_step_handler(message, menu_recipe_instructions, index)
 
 @bot.callback_query_handler(func = lambda call: call.data.startswith("enough_instructions"))
 def enough_instruction(call):
+    """ Ends adding instruction and finally adds new recipe """
+    
     bot.delete_message(call.message.chat.id, call.message.message_id)
     index = int(call.data.split('|')[1])
     bot.send_message(call.message.chat.id, "Ваш рецепт записан")
@@ -158,6 +188,8 @@ def enough_instruction(call):
 
 @bot.message_handler(commands=["recipes"])
 def look_at_recipes(message):
+    """ Shows list of names of recipes with id """
+    
     to_message = ""
     for recipe in data_base.getAll():
         to_message += (recipe["recipe_listed"][0] + ": id " + str(recipe["id"])) + "\n"
@@ -168,22 +200,31 @@ def look_at_recipes(message):
 
 @bot.message_handler(commands=["recipe"])
 def concrete_look(message):
+    """ Shows concrete recipe by id """
+    
     bot.send_message(message.chat.id, "Введите id рецепта")
     bot.register_next_step_handler(message, get_id_recipe)
 
 def get_id_recipe(message):
+    """ Gets id of recipe and shows it """
+    
     if not message.text.isdigit():
         bot.send_message(message.chat.id, "Неправильный формат id, попробуйте ещё раз")
         bot.register_next_step_handler(message, get_id_recipe)
         return
+    
     got = data_base.getByQuery(query = {"id" : int(message.text)})
+    
     if len(got) == 0:
         bot.send_message(message.chat.id, "Рецепта с таким id не существует")
         return
+    
     bot.send_message(message.chat.id, got[0]["recipe_listed"][1])
         
 @bot.message_handler(commands=["clear_storage"])
 def clear_database(message):
+    """ Shows menu of clearing database """
+    
     markup = types.InlineKeyboardMarkup(row_width = 2)
     
     yes_button = types.InlineKeyboardButton(Buttons.yes_, callback_data="clear_all")
@@ -193,12 +234,16 @@ def clear_database(message):
 
 @bot.callback_query_handler(func = lambda call: call.data == "clear_all")
 def clear_all(call):
+    """ Clears database """
+    
     bot.delete_message(call.message.chat.id, call.message.message_id)
     bot.send_message(call.message.id, "Всё очищено")
     data_base.deleteAll()
 
 @bot.message_handler(content_types=['text'])
 def main_handler(message):
+    """ Main comannd's handler """
+    
     match message.text:
         case Buttons.start_russian_:
             start_command(message)
