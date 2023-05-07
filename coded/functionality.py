@@ -168,13 +168,13 @@ def add_instruction(call):
     bot.delete_message(call.message.chat.id, call.message.message_id)
     index = int(call.data.split('|')[1])
     bot.send_message(call.message.chat.id, "Введите инструкцию")
-    get_instruction(call.message, index)
+    bot.register_next_step_handler(call.message, get_instruction, index)
 
 def get_instruction(message, index):
     """ Gets full instruction text and adds it to recipe """
     
     temporary_list[index].add_instruction(message.text)
-    bot.register_next_step_handler(message, menu_recipe_instructions, index)
+    menu_recipe_instructions(message, index)
 
 @bot.callback_query_handler(func = lambda call: call.data.startswith("enough_instructions"))
 def enough_instruction(call):
@@ -228,7 +228,9 @@ def clear_database(message):
     markup = types.InlineKeyboardMarkup(row_width = 2)
     
     yes_button = types.InlineKeyboardButton(Buttons.yes_, callback_data="clear_all")
-    no_button = types.InlineKeyboardButton(Buttons.no_)
+    no_button = types.InlineKeyboardButton(Buttons.no_, callback_data="not_clear")
+    
+    markup.add(yes_button, no_button)
     
     bot.send_message(message.chat.id, "Вы хотите стереть все рецепты?", reply_markup = markup)
 
@@ -237,8 +239,16 @@ def clear_all(call):
     """ Clears database """
     
     bot.delete_message(call.message.chat.id, call.message.message_id)
-    bot.send_message(call.message.id, "Всё очищено")
+    bot.send_message(call.message.chat.id, "Всё очищено")
     data_base.deleteAll()
+
+@bot.callback_query_handler(func = lambda call: call.data == "not_clear")
+def not_clear(call):
+    """ Doesn't clear database """
+    
+    bot.delete_message(call.message.chat.id, call.message.message_id)
+    bot.send_message(call.message.chat.id, "Ладно")
+    
 
 @bot.message_handler(content_types=['text'])
 def main_handler(message):
@@ -258,5 +268,4 @@ def main_handler(message):
         case Buttons.clear_russian_:
             clear_database(message)
         case _:
-            print(message.text)
             bot.send_message(message.chat.id, "Не знаю такой команды")
