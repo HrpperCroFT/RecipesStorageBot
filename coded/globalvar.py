@@ -99,7 +99,7 @@ class Weight:
         """ Method of conversion to string """
         
         result = str(self.amount)
-        if self.measure == VolumeMeasure.milligramm:
+        if self.measure == WeightMeasure.milligramm:
             result += " мг"
         elif self.measure == WeightMeasure.gramm:
             result += " г"
