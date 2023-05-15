@@ -4,6 +4,7 @@ from telebot import types
 from coded.recipe import Recipe
 from coded.ingredient import Ingredient 
 import random
+import os
             
 @bot.message_handler(commands=["start"])
 def start_command(message):
@@ -182,6 +183,51 @@ def enough_instruction(call):
     
     bot.delete_message(call.message.chat.id, call.message.message_id)
     index = int(call.data.split('|')[1])
+    
+    markup = types.InlineKeyboardMarkup(row_width = 2)
+    
+    add_instruction_button = types.InlineKeyboardButton(Buttons.yes_, callback_data = "add_image|" + str(index))
+    enough_instructions_button = types.InlineKeyboardButton(Buttons.no_, callback_data = "no_image|" + str(index))
+    
+    markup.add(add_instruction_button, enough_instructions_button)
+    
+    bot.send_message(call.message.chat.id, "Хотите прикрепить изобржение?", reply_markup = markup)
+
+@bot.callback_query_handler(func = lambda call: call.data.startswith("add_image"))
+def add_image(call):
+    bot.delete_message(call.message.chat.id, call.message.message_id)
+    index = int(call.data.split('|')[1])
+    
+    bot.send_message(call.message.chat.id, "Отправьте фото. Если передумали, напишите 'Не надо фото'")
+    bot.register_next_step_handler(call.message, end_adding_recipe_with_image, index)
+
+def end_adding_recipe_with_image(message, index):
+    adding_image = False
+    if message.content_type != "photo":
+        if not message.content_type == "text" or message.data != "Не надо фото":
+            bot.send_message(message.chat.id, "Это не фото. Если передумали, напишите 'Не надо фото'")
+            bot.register_next_step_handler(message, end_adding_recipe_with_image, index)
+            return;
+    else:
+        adding_image = True
+    bot.send_message(message.chat.id, "Ваш рецепт записан")
+    lst = temporary_list[index].to_list()
+    id_got = data_base.add({ "recipe_listed" : lst })
+    if adding_image:
+        if not os.path.isdir("./data/" + str(id_got)):
+            os.mkdir("./data/" + str(id_got))
+        raw = message.photo[2].file_id
+        name = raw+".jpg"
+        file_info = bot.get_file(raw)
+        downloaded_file = bot.download_file(file_info.file_path)
+        with open("./data/" + str(id_got) + "/image.jpg",'wb') as new_file:
+            new_file.write(downloaded_file)
+     
+@bot.callback_query_handler(func = lambda call: call.data.startswith("no_image"))
+def no_image(call):
+    bot.delete_message(call.message.chat.id, call.message.message_id)
+    index = int(call.data.split('|')[1])
+    
     bot.send_message(call.message.chat.id, "Ваш рецепт записан")
     lst = temporary_list[index].to_list()
     data_base.add({ "recipe_listed" : lst })
@@ -213,12 +259,18 @@ def get_id_recipe(message):
         bot.register_next_step_handler(message, get_id_recipe)
         return
     
-    got = data_base.getByQuery(query = {"id" : int(message.text)})
+    got_id = int(message.text)
+    
+    got = data_base.getByQuery(query = {"id" : got_id})
     
     if len(got) == 0:
         bot.send_message(message.chat.id, "Рецепта с таким id не существует")
         return
     
+    if os.path.isfile("./data/" + str(got_id) + "/image.jpg"):
+        img = open("./data/" + str(got_id) + "/image.jpg", 'rb')
+        bot.send_photo(message.chat.id, img)
+        
     bot.send_message(message.chat.id, got[0]["recipe_listed"][1])
         
 @bot.message_handler(commands=["clear_storage"])
