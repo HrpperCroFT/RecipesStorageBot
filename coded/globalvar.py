@@ -18,6 +18,7 @@ class Buttons:
     recipes_russian_ = "Покажи рецепты"
     recipe_concrete_russian_ = "Покажи конкретный рецепт"
     clear_russian_ = "Очистить хранилище рецептов"
+    delete_russian_ = "Удалить конкретный рецепт"
     
     add_ingredient_ = "Добавить ингредиент"
     enough_ingredients_ = "Достаточно ингредиентов"
@@ -42,6 +43,7 @@ class Messages:
     Покажи рецепты — /recipes
     Покажи конкретный рецепт — /recipe
     Очистить хранилище рецетов — /clear_storage
+    Удвлить конкретный рецепт — /delete_recipe
     """
     
 class VolumeMeasure(Enum):

@@ -16,8 +16,10 @@ def start_command(message):
     add_recipe_button = types.KeyboardButton(Buttons.add_recipe_russian_)
     recipes_button = types.KeyboardButton(Buttons.recipes_russian_)
     recipe_concrete_button = types.KeyboardButton(Buttons.recipe_concrete_russian_)
+    delete_recipe_button = types.KeyboardButton(Buttons.delete_russian_)
+    clear_database_button = types.KeyboardButton(Buttons.clear_russian_)
     
-    markup.add(help_button, add_recipe_button, recipes_button, recipe_concrete_button)
+    markup.add(help_button, add_recipe_button, recipes_button, recipe_concrete_button, delete_recipe_button, clear_database_button)
     
     bot.send_message(message.chat.id, 'Данный бот предназначен для хранения и просмотра рецептов, что вы хотите сделать?', reply_markup=markup)
 
@@ -300,7 +302,31 @@ def not_clear(call):
     
     bot.delete_message(call.message.chat.id, call.message.message_id)
     bot.send_message(call.message.chat.id, "Ладно")
+
+@bot.message_handler(commands=["delete_recipe"])
+def delete_one_recipe(message):
+    """ Delete one recipe """
     
+    bot.send_message(message.chat.id, "Введите id рецепта")
+    bot.register_next_step_handler(message, delete_recipe)
+
+def delete_recipe(message):
+    """ Delete recipe by id """
+    
+    if not message.text.isdigit():
+        bot.send_message(message.chat.id, "Неправильный формат id, попробуйте ещё раз")
+        bot.register_next_step_handler(message, get_id_recipe)
+        return
+    
+    got_id = int(message.text)
+    
+    got = data_base.getByQuery(query = {"id" : got_id})
+    
+    if len(got) == 0:
+        bot.send_message(message.chat.id, "Рецепта с таким id не существует")
+        return
+    
+    data_base.deleteById(got_id)
 
 @bot.message_handler(content_types=['text'])
 def main_handler(message):
@@ -319,5 +345,7 @@ def main_handler(message):
             concrete_look(message)
         case Buttons.clear_russian_:
             clear_database(message)
+        case Buttons.delete_russian_:
+            delete_one_recipe(message)
         case _:
             bot.send_message(message.chat.id, "Не знаю такой команды")
