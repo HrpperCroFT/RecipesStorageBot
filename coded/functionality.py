@@ -206,7 +206,7 @@ def add_image(call):
 def end_adding_recipe_with_image(message, index):
     adding_image = False
     if message.content_type != "photo":
-        if not message.content_type == "text" or message.data != "Не надо фото":
+        if not message.content_type == "text" or message.text != "Не надо фото":
             bot.send_message(message.chat.id, "Это не фото. Если передумали, напишите 'Не надо фото'")
             bot.register_next_step_handler(message, end_adding_recipe_with_image, index)
             return;
