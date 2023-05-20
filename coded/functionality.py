@@ -6,6 +6,7 @@ from coded.ingredient import Ingredient
 import random
 import os
             
+
 @bot.message_handler(commands=["start"])
 def start_command(message):
     """ Shows start menu """
@@ -23,11 +24,13 @@ def start_command(message):
     
     bot.send_message(message.chat.id, 'Данный бот предназначен для хранения и просмотра рецептов, что вы хотите сделать?', reply_markup=markup)
 
+
 @bot.message_handler(commands=["help"])    
 def help_command(message):
     """ Shows help message """
     
     bot.send_message(message.chat.id, Messages.help_message_)
+
 
 @bot.message_handler(commands=["add_recipe"])
 def add_recipe(message):
@@ -41,12 +44,14 @@ def add_recipe(message):
     
     bot.register_next_step_handler(message, get_name, len(temporary_list) - 1)
     
+
 def get_name(message, index):
     """ Gets name of new recipe """
     
     temporary_list[index].name = message.text
     menu_recipe_ingredients(message, index)
     
+
 def menu_recipe_ingredients(message, index):
     """ Shows menu of adding new ingredients to this recipe """
     
@@ -59,6 +64,7 @@ def menu_recipe_ingredients(message, index):
     
     bot.send_message(message.chat.id, "Вы хотите добавить ингредиент? Их сейчас " + str(len(temporary_list[index].ingredients)), reply_markup = markup)
 
+
 @bot.callback_query_handler(func = lambda call: call.data.startswith("add_ingredient"))
 def add_ingredient(call):
     """ Starts ading new ingredient to recipe """
@@ -68,6 +74,7 @@ def add_ingredient(call):
     bot.send_message(call.message.chat.id, "Введите название ингредиента (не используйте символ |)")
     bot.register_next_step_handler(call.message, add_ingredient_name, index)
 
+
 @bot.callback_query_handler(func = lambda call: call.data.startswith("enough_ingredients"))    
 def enough_ingredients(call):
     """ Ends adding ingredients to recipe """
@@ -76,6 +83,7 @@ def enough_ingredients(call):
     index = int(call.data.split("|")[1])
     menu_recipe_instructions(call.message, index)
     
+
 def add_ingredient_name(message, index):
     """ Gets name of new ingredient and shows menu of getting way of measuring """
     
@@ -96,6 +104,7 @@ def add_ingredient_name(message, index):
     
     bot.send_message(message.chat.id, "Способ измерения количества?", reply_markup = markup)
 
+
 @bot.callback_query_handler(func = lambda call: call.data.startswith("measure"))
 def add_ingredient_measure(call):
     """ Adds measurement of new ingredient """
@@ -113,6 +122,7 @@ def add_ingredient_measure(call):
             bot.send_message(call.message.chat.id, "Введите количество (не используйте знак |)")
     
     bot.register_next_step_handler(call.message, last_step_ingredient, parsed)
+
     
 def last_step_ingredient(message, parsed):
     """ Finally adds new ingredient """
@@ -152,6 +162,7 @@ def last_step_ingredient(message, parsed):
             temporary_list[index].add_ingredient(Ingredient(parsed[-2], message.text, "other"))
     menu_recipe_ingredients(message, index)
 
+
 def menu_recipe_instructions(message, index):
     """ Shows menu of adding instructions to this recipe """
     
@@ -164,6 +175,7 @@ def menu_recipe_instructions(message, index):
     
     bot.send_message(message.chat.id, "Какие инструкции к приготовлению?", reply_markup = markup)
     
+
 @bot.callback_query_handler(func = lambda call: call.data.startswith("add_instruction"))
 def add_instruction(call):
     """ Starts adding current instruction to recipe """
@@ -173,11 +185,13 @@ def add_instruction(call):
     bot.send_message(call.message.chat.id, "Введите инструкцию")
     bot.register_next_step_handler(call.message, get_instruction, index)
 
+
 def get_instruction(message, index):
     """ Gets full instruction text and adds it to recipe """
     
     temporary_list[index].add_instruction(message.text)
     menu_recipe_instructions(message, index)
+
 
 @bot.callback_query_handler(func = lambda call: call.data.startswith("enough_instructions"))
 def enough_instruction(call):
@@ -195,6 +209,7 @@ def enough_instruction(call):
     
     bot.send_message(call.message.chat.id, "Хотите прикрепить изобржение?", reply_markup = markup)
 
+
 @bot.callback_query_handler(func = lambda call: call.data.startswith("add_image"))
 def add_image(call):
     bot.delete_message(call.message.chat.id, call.message.message_id)
@@ -202,6 +217,7 @@ def add_image(call):
     
     bot.send_message(call.message.chat.id, "Отправьте фото. Если передумали, напишите 'Не надо фото'")
     bot.register_next_step_handler(call.message, end_adding_recipe_with_image, index)
+
 
 def end_adding_recipe_with_image(message, index):
     adding_image = False
@@ -224,6 +240,7 @@ def end_adding_recipe_with_image(message, index):
         downloaded_file = bot.download_file(file_info.file_path)
         with open("./data/" + str(id_got) + "/image.jpg",'wb') as new_file:
             new_file.write(downloaded_file)
+
      
 @bot.callback_query_handler(func = lambda call: call.data.startswith("no_image"))
 def no_image(call):
@@ -233,6 +250,7 @@ def no_image(call):
     bot.send_message(call.message.chat.id, "Ваш рецепт записан")
     lst = temporary_list[index].to_list()
     data_base.add({ "recipe_listed" : lst })
+
 
 @bot.message_handler(commands=["recipes"])
 def look_at_recipes(message):
@@ -246,12 +264,14 @@ def look_at_recipes(message):
         return
     bot.send_message(message.chat.id, to_message)
 
+
 @bot.message_handler(commands=["recipe"])
 def concrete_look(message):
     """ Shows concrete recipe by id """
     
     bot.send_message(message.chat.id, "Введите id рецепта")
     bot.register_next_step_handler(message, get_id_recipe)
+
 
 def get_id_recipe(message):
     """ Gets id of recipe and shows it """
@@ -274,6 +294,7 @@ def get_id_recipe(message):
         bot.send_photo(message.chat.id, img)
         
     bot.send_message(message.chat.id, got[0]["recipe_listed"][1])
+
         
 @bot.message_handler(commands=["clear_storage"])
 def clear_database(message):
@@ -288,6 +309,7 @@ def clear_database(message):
     
     bot.send_message(message.chat.id, "Вы хотите стереть все рецепты?", reply_markup = markup)
 
+
 @bot.callback_query_handler(func = lambda call: call.data == "clear_all")
 def clear_all(call):
     """ Clears database """
@@ -296,6 +318,7 @@ def clear_all(call):
     bot.send_message(call.message.chat.id, "Всё очищено")
     data_base.deleteAll()
 
+
 @bot.callback_query_handler(func = lambda call: call.data == "not_clear")
 def not_clear(call):
     """ Doesn't clear database """
@@ -303,12 +326,14 @@ def not_clear(call):
     bot.delete_message(call.message.chat.id, call.message.message_id)
     bot.send_message(call.message.chat.id, "Ладно")
 
+
 @bot.message_handler(commands=["delete_recipe"])
 def delete_one_recipe(message):
     """ Delete one recipe """
     
     bot.send_message(message.chat.id, "Введите id рецепта")
     bot.register_next_step_handler(message, delete_recipe)
+
 
 def delete_recipe(message):
     """ Delete recipe by id """
@@ -327,6 +352,7 @@ def delete_recipe(message):
         return
     
     data_base.deleteById(got_id)
+
 
 @bot.message_handler(content_types=['text'])
 def main_handler(message):

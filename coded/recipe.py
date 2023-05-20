@@ -11,16 +11,19 @@ class Recipe:
         self.name = ""
         self.instructions = []
     
+
     def add_ingredient(self, ingredient_):
         """ Adds new ingredient to this recipe """
         
         self.ingredients.append(ingredient_)
     
+
     def add_instruction(self, instruction):
         """ Adds new instruction to this recipe """
         
         self.instructions.append(instruction)
-        
+    
+    
     def to_list(self):
         """ Converts information about recipe to string """
         
@@ -28,6 +31,7 @@ class Recipe:
         result.append(self.to_str())
         return result
     
+
     def to_str(self):
         """ Converts information about recipe to string """
         

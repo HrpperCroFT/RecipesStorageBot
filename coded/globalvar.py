@@ -3,11 +3,15 @@ from pysondb import db
 from coded.token import apikey
 from enum import Enum
 
+
 data_base = db.getDb("data/storage.json")
+
 
 temporary_list = []
 
+
 bot = telebot.TeleBot(apikey)
+
 
 class Buttons:
     """ Class with names of buttons """
@@ -33,6 +37,7 @@ class Buttons:
     yes_ = "Да"
     no_ = "Нет"
 
+
 class Messages:
     """ Class of constant messages """
     
@@ -43,14 +48,16 @@ class Messages:
     Покажи рецепты — /recipes
     Покажи конкретный рецепт — /recipe
     Очистить хранилище рецетов — /clear_storage
-    Удвлить конкретный рецепт — /delete_recipe
+    Удалить конкретный рецепт — /delete_recipe
     """
     
+
 class VolumeMeasure(Enum):
     """ Enumerates volume measure units """
     
     milliliters = 0
     litres = 1
+
 
 class Volume:
     """ Type of measure with volume """
@@ -65,6 +72,7 @@ class Volume:
         else:
             self.measure = VolumeMeasure.litres
     
+
     def to_str(self):
         """ Method of conversion to string """
         
@@ -75,12 +83,14 @@ class Volume:
             result += " л"
         return result
 
+
 class WeightMeasure(Enum):
     """ Enumerates weight measure units """
     
     milligramm = 0
     gramm = 1
     kilogramm = 2
+
 
 class Weight:
     """ Type of measure with weight """
@@ -97,6 +107,7 @@ class Weight:
         else:
             self.measure = WeightMeasure.kilogramm
     
+
     def to_str(self):
         """ Method of conversion to string """
         
@@ -108,6 +119,7 @@ class Weight:
         else:
             result += " кг"
         return result
+
 
 class OtherMeasurement:
     """ Type of measure with other ways """

@@ -1,5 +1,6 @@
 from coded.globalvar import *
 
+
 class Ingredient:
     """ This class contains full information about ingredient """
     
@@ -13,6 +14,7 @@ class Ingredient:
         else:
             self.measure = OtherMeasurement(amount)
     
+
     def to_str(self):
         """ Converts information about ingredient to string """
         
