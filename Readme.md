@@ -1,0 +1,1 @@
+To start this bot: make file "token.py" in folder "coded", write "apikey=" and your token, then execute start_bot.sh or start_bot.bat depending on your operation system.
